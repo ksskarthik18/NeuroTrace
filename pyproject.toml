@@ -1,0 +1,25 @@
+[project]
+name = "neurotrace"
+version = "0.1.0"
+description = "Autonomous AI System for Bug Localization, Root Cause Analysis, and Patch Verification"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Karthik" }
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pylint.messages_control]
+disable = ["C0114", "C0115", "C0116"]

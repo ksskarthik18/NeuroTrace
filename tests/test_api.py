@@ -1,5 +1,5 @@
 """
-Tests for the NeuroTrace API — Phase 0 (health check & basic endpoints).
+Tests for the NeuroTrace API endpoints.
 """
 
 import pytest
@@ -36,8 +36,8 @@ async def test_health(client):
 
 
 @pytest.mark.asyncio
-async def test_debug_stub(client):
-    """Debug endpoint accepts code and returns a session ID."""
+async def test_debug_runs_code(client):
+    """Debug endpoint executes code and returns execution result."""
     response = await client.post(
         "/api/v1/debug",
         json={"source_code": "print('hello')"}
@@ -46,14 +46,32 @@ async def test_debug_stub(client):
     data = response.json()
     assert "session_id" in data
     assert data["source_code"] == "print('hello')"
+    assert data["execution"] is not None
+    assert data["execution"]["return_code"] == 0
+    assert "hello" in data["execution"]["stdout"]
 
 
 @pytest.mark.asyncio
-async def test_execute_stub(client):
-    """Execute endpoint returns not-implemented message."""
+async def test_execute_endpoint(client):
+    """Execute endpoint runs code and returns structured result."""
     response = await client.post(
         "/api/v1/execute",
-        json={"source_code": "x = 1"}
+        json={"source_code": "print(2 + 2)"}
     )
     assert response.status_code == 200
-    assert "Phase 1" in response.json()["message"]
+    data = response.json()
+    assert data["return_code"] == 0
+    assert "4" in data["stdout"]
+
+
+@pytest.mark.asyncio
+async def test_execute_with_error(client):
+    """Execute endpoint captures errors properly."""
+    response = await client.post(
+        "/api/v1/execute",
+        json={"source_code": "1/0"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["return_code"] != 0
+    assert "ZeroDivisionError" in data["stderr"]

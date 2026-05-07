@@ -3,9 +3,11 @@ NeuroTrace API Routes
 Defines all REST endpoints for the debugging pipeline.
 """
 
+import uuid
 from fastapi import APIRouter
 from backend.config import get_settings
-from backend.models import DebugRequest, DebugResponse, HealthResponse
+from backend.models import DebugRequest, DebugResponse, HealthResponse, ExecutionResult
+from backend.debugger.sandbox import execute_code
 
 router = APIRouter(prefix="/api/v1", tags=["debug"])
 settings = get_settings()
@@ -24,29 +26,23 @@ async def health_check():
 @router.post("/debug", response_model=DebugResponse)
 async def debug_code(request: DebugRequest):
     """
-    Full debugging pipeline:
-    1. Execute code in sandbox
-    2. Run static analysis
-    3. Collect runtime trace
-    4. Perform root cause analysis (LLM)
-    5. Generate patch (LLM)
-    6. Validate patch
-
-    Currently returns a stub response — each module will be
-    wired in during subsequent phases.
+    Full debugging pipeline.
+    Currently runs Phase 1 (execution) only.
+    Remaining phases will be wired in later.
     """
-    import uuid
+    execution = await execute_code(request.source_code)
 
     return DebugResponse(
         session_id=str(uuid.uuid4()),
         source_code=request.source_code,
+        execution=execution,
     )
 
 
-@router.post("/execute")
-async def execute_code(request: DebugRequest):
-    """Execute code in sandbox. (Phase 1)"""
-    return {"message": "Not implemented yet - coming in Phase 1"}
+@router.post("/execute", response_model=ExecutionResult)
+async def execute_code_endpoint(request: DebugRequest):
+    """Execute code in the sandbox and return the result."""
+    return await execute_code(request.source_code)
 
 
 @router.post("/analyze")

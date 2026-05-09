@@ -9,13 +9,14 @@ from backend.config import get_settings
 from backend.models import (
     DebugRequest, DebugResponse, HealthResponse,
     ExecutionResult, StaticAnalysisResult, TraceResult,
-    RootCauseResult, PatchResult,
+    RootCauseResult, PatchResult, ValidationResult,
 )
 from backend.debugger.sandbox import execute_code
 from backend.debugger.static_analyzer import analyze_code
 from backend.debugger.trace_collector import collect_trace
 from backend.llm.root_cause import analyze_root_cause
 from backend.patcher.generator import generate_patch
+from backend.validator.runner import validate_patch
 
 router = APIRouter(prefix="/api/v1", tags=["debug"])
 settings = get_settings()
@@ -34,14 +35,22 @@ async def health_check():
 @router.post("/debug", response_model=DebugResponse)
 async def debug_code(request: DebugRequest):
     """
-    Full debugging pipeline.
-    Runs execution, static analysis, trace, root cause analysis, and patch generation.
+    Full debugging pipeline:
+    1. Execute code in sandbox
+    2. Run static analysis
+    3. Collect runtime trace
+    4. Perform root cause analysis (LLM)
+    5. Generate patch (LLM)
+    6. Validate patch with iterative repair loop
     """
     execution = await execute_code(request.source_code)
     static_analysis = await analyze_code(request.source_code)
     trace = await collect_trace(request.source_code)
     root_cause = await analyze_root_cause(request.source_code, trace, static_analysis)
     patch = await generate_patch(request.source_code, root_cause)
+    validation = await validate_patch(
+        request.source_code, patch.patched_code, root_cause, request.test_code
+    )
 
     return DebugResponse(
         session_id=str(uuid.uuid4()),
@@ -51,6 +60,7 @@ async def debug_code(request: DebugRequest):
         trace=trace,
         root_cause=root_cause,
         patch=patch,
+        validation=validation,
     )
 
 
@@ -89,7 +99,13 @@ async def patch_endpoint(request: DebugRequest):
     return await generate_patch(request.source_code, root_cause)
 
 
-@router.post("/validate")
-async def validate_patch_endpoint(request: DebugRequest):
-    """Validate a patch. (Phase 5)"""
-    return {"message": "Not implemented yet - coming in Phase 5"}
+@router.post("/validate", response_model=ValidationResult)
+async def validate_endpoint(request: DebugRequest):
+    """Run the full pipeline and validate the generated patch."""
+    trace = await collect_trace(request.source_code)
+    static_analysis = await analyze_code(request.source_code)
+    root_cause = await analyze_root_cause(request.source_code, trace, static_analysis)
+    patch = await generate_patch(request.source_code, root_cause)
+    return await validate_patch(
+        request.source_code, patch.patched_code, root_cause, request.test_code
+    )

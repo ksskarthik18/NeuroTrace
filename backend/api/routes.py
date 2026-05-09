@@ -6,8 +6,9 @@ Defines all REST endpoints for the debugging pipeline.
 import uuid
 from fastapi import APIRouter
 from backend.config import get_settings
-from backend.models import DebugRequest, DebugResponse, HealthResponse, ExecutionResult
+from backend.models import DebugRequest, DebugResponse, HealthResponse, ExecutionResult, StaticAnalysisResult
 from backend.debugger.sandbox import execute_code
+from backend.debugger.static_analyzer import analyze_code
 
 router = APIRouter(prefix="/api/v1", tags=["debug"])
 settings = get_settings()
@@ -27,15 +28,17 @@ async def health_check():
 async def debug_code(request: DebugRequest):
     """
     Full debugging pipeline.
-    Currently runs Phase 1 (execution) only.
+    Currently runs Phase 1 (execution) and Phase 2 (static analysis).
     Remaining phases will be wired in later.
     """
     execution = await execute_code(request.source_code)
+    static_analysis = await analyze_code(request.source_code)
 
     return DebugResponse(
         session_id=str(uuid.uuid4()),
         source_code=request.source_code,
         execution=execution,
+        static_analysis=static_analysis,
     )
 
 
@@ -45,10 +48,10 @@ async def execute_code_endpoint(request: DebugRequest):
     return await execute_code(request.source_code)
 
 
-@router.post("/analyze")
-async def analyze_code(request: DebugRequest):
-    """Run static analysis. (Phase 2)"""
-    return {"message": "Not implemented yet - coming in Phase 2"}
+@router.post("/analyze", response_model=StaticAnalysisResult)
+async def analyze_code_endpoint(request: DebugRequest):
+    """Run static analysis on the provided code."""
+    return await analyze_code(request.source_code)
 
 
 @router.post("/trace")

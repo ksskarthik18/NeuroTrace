@@ -6,10 +6,16 @@ Defines all REST endpoints for the debugging pipeline.
 import uuid
 from fastapi import APIRouter
 from backend.config import get_settings
-from backend.models import DebugRequest, DebugResponse, HealthResponse, ExecutionResult, StaticAnalysisResult, TraceResult
+from backend.models import (
+    DebugRequest, DebugResponse, HealthResponse,
+    ExecutionResult, StaticAnalysisResult, TraceResult,
+    RootCauseResult, PatchResult,
+)
 from backend.debugger.sandbox import execute_code
 from backend.debugger.static_analyzer import analyze_code
 from backend.debugger.trace_collector import collect_trace
+from backend.llm.root_cause import analyze_root_cause
+from backend.patcher.generator import generate_patch
 
 router = APIRouter(prefix="/api/v1", tags=["debug"])
 settings = get_settings()
@@ -29,12 +35,13 @@ async def health_check():
 async def debug_code(request: DebugRequest):
     """
     Full debugging pipeline.
-    Runs Phase 1 (execution), Phase 2 (static analysis), and Phase 3 (trace).
-    Remaining phases will be wired in later.
+    Runs execution, static analysis, trace, root cause analysis, and patch generation.
     """
     execution = await execute_code(request.source_code)
     static_analysis = await analyze_code(request.source_code)
     trace = await collect_trace(request.source_code)
+    root_cause = await analyze_root_cause(request.source_code, trace, static_analysis)
+    patch = await generate_patch(request.source_code, root_cause)
 
     return DebugResponse(
         session_id=str(uuid.uuid4()),
@@ -42,6 +49,8 @@ async def debug_code(request: DebugRequest):
         execution=execution,
         static_analysis=static_analysis,
         trace=trace,
+        root_cause=root_cause,
+        patch=patch,
     )
 
 
@@ -63,19 +72,24 @@ async def collect_trace_endpoint(request: DebugRequest):
     return await collect_trace(request.source_code)
 
 
-@router.post("/root-cause")
-async def root_cause_analysis(request: DebugRequest):
-    """Perform root cause analysis. (Phase 4)"""
-    return {"message": "Not implemented yet - coming in Phase 4"}
+@router.post("/root-cause", response_model=RootCauseResult)
+async def root_cause_endpoint(request: DebugRequest):
+    """Perform LLM root cause analysis on buggy code."""
+    trace = await collect_trace(request.source_code)
+    static_analysis = await analyze_code(request.source_code)
+    return await analyze_root_cause(request.source_code, trace, static_analysis)
 
 
-@router.post("/patch")
-async def generate_patch(request: DebugRequest):
-    """Generate a patch. (Phase 4)"""
-    return {"message": "Not implemented yet - coming in Phase 4"}
+@router.post("/patch", response_model=PatchResult)
+async def patch_endpoint(request: DebugRequest):
+    """Generate a patch for buggy code."""
+    trace = await collect_trace(request.source_code)
+    static_analysis = await analyze_code(request.source_code)
+    root_cause = await analyze_root_cause(request.source_code, trace, static_analysis)
+    return await generate_patch(request.source_code, root_cause)
 
 
 @router.post("/validate")
-async def validate_patch(request: DebugRequest):
+async def validate_patch_endpoint(request: DebugRequest):
     """Validate a patch. (Phase 5)"""
     return {"message": "Not implemented yet - coming in Phase 5"}

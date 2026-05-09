@@ -6,9 +6,10 @@ Defines all REST endpoints for the debugging pipeline.
 import uuid
 from fastapi import APIRouter
 from backend.config import get_settings
-from backend.models import DebugRequest, DebugResponse, HealthResponse, ExecutionResult, StaticAnalysisResult
+from backend.models import DebugRequest, DebugResponse, HealthResponse, ExecutionResult, StaticAnalysisResult, TraceResult
 from backend.debugger.sandbox import execute_code
 from backend.debugger.static_analyzer import analyze_code
+from backend.debugger.trace_collector import collect_trace
 
 router = APIRouter(prefix="/api/v1", tags=["debug"])
 settings = get_settings()
@@ -28,17 +29,19 @@ async def health_check():
 async def debug_code(request: DebugRequest):
     """
     Full debugging pipeline.
-    Currently runs Phase 1 (execution) and Phase 2 (static analysis).
+    Runs Phase 1 (execution), Phase 2 (static analysis), and Phase 3 (trace).
     Remaining phases will be wired in later.
     """
     execution = await execute_code(request.source_code)
     static_analysis = await analyze_code(request.source_code)
+    trace = await collect_trace(request.source_code)
 
     return DebugResponse(
         session_id=str(uuid.uuid4()),
         source_code=request.source_code,
         execution=execution,
         static_analysis=static_analysis,
+        trace=trace,
     )
 
 
@@ -54,10 +57,10 @@ async def analyze_code_endpoint(request: DebugRequest):
     return await analyze_code(request.source_code)
 
 
-@router.post("/trace")
-async def collect_trace(request: DebugRequest):
-    """Collect runtime trace. (Phase 3)"""
-    return {"message": "Not implemented yet - coming in Phase 3"}
+@router.post("/trace", response_model=TraceResult)
+async def collect_trace_endpoint(request: DebugRequest):
+    """Collect runtime trace with exception details and variable state."""
+    return await collect_trace(request.source_code)
 
 
 @router.post("/root-cause")

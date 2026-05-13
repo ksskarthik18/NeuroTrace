@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     openai_api_key: str = ""
     llm_provider: str = "groq"  # "groq" or "openai"
-    llm_model: str = "llama3-70b-8192"
+    llm_model: str = "llama-3.3-70b-versatile"
 
     # Database
     database_url: str = "sqlite+aiosqlite:///./neurotrace.db"

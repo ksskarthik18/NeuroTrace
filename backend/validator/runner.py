@@ -74,6 +74,17 @@ def _calculate_confidence(
     # attempt penalty: first attempt = 1.0, degrades with retries
     attempt_score = max(0.0, 1.0 - (attempts - 1) * 0.3)
 
+    # If the patch made no meaningful changes (ignoring blank lines and comments) and executes perfectly,
+    # it means the original code was already correct. Give it 100% confidence.
+    def _clean_line(line: str) -> str:
+        return line.split('#')[0].strip()
+
+    orig_clean = [_clean_line(l) for l in orig_lines if _clean_line(l)]
+    patch_clean = [_clean_line(l) for l in patch_lines if _clean_line(l)]
+    
+    if orig_clean == patch_clean and exec_score == 1.0:
+        return 1.0
+
     confidence = (
         0.35 * exec_score
         + 0.35 * test_score
@@ -110,6 +121,12 @@ async def validate_patch(
         test_results = None
         if test_code:
             test_results = _parse_pytest_output(execution.stdout + execution.stderr)
+            # Fallback for plain assert statements (no pytest output)
+            if test_results.passed == 0 and test_results.failed == 0 and test_results.errors == 0:
+                if execution.return_code == 0:
+                    test_results.passed = 1
+                else:
+                    test_results.failed = 1
 
         # check if patch succeeded
         if execution.return_code == 0:

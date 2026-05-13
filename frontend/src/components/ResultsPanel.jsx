@@ -123,7 +123,7 @@ export default function ResultsPanel({ result }) {
               <span style={{ color: "var(--text-muted)", marginLeft: "8px" }}>at line {root_cause.faulty_line}</span>
             )}
           </div>
-          <div className="root-cause-text">{root_cause.root_cause}</div>
+
           {root_cause.reasoning_steps?.length > 0 && (
             <ul className="reasoning-steps">
               {root_cause.reasoning_steps.map((step, i) => (
@@ -177,7 +177,7 @@ export default function ResultsPanel({ result }) {
       )}
 
       {/* Patched Code */}
-      {validation?.patched_code && validation.status === "validated" && (
+      {validation?.patched_code && validation.status === "validated" && patch?.diff && (
         <div className="card">
           <div className="card-title">
             <span className="icon">✨</span>

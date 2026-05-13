@@ -53,7 +53,14 @@ async def debug_code(request: DebugRequest):
     static_analysis = await analyze_code(request.source_code)
     trace = await collect_trace(request.source_code)
     root_cause = await analyze_root_cause(request.source_code, trace, static_analysis)
-    patch = await generate_patch(request.source_code, root_cause)
+    if "no error detected" in root_cause.bug_type.lower() or "no error detected" in root_cause.root_cause.lower():
+        patch = PatchResult(
+            patched_code=request.source_code,
+            explanation="No bug was detected in the provided code. It is already correct.",
+            diff=""
+        )
+    else:
+        patch = await generate_patch(request.source_code, root_cause)
     validation = await validate_patch(
         request.source_code, patch.patched_code, root_cause, request.test_code
     )

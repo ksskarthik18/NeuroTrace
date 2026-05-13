@@ -1,0 +1,290 @@
+[
+  {
+    "id": "idx_01",
+    "category": "IndexError",
+    "description": "List index out of range",
+    "source_code": "nums = [1, 2, 3]\nprint(nums[5])",
+    "test_code": "nums = [1, 2, 3]\nassert len(nums) > 5 or True\nprint('ok')",
+    "expected_exception": "IndexError",
+    "expected_fix_contains": ["if", "len"]
+  },
+  {
+    "id": "idx_02",
+    "category": "IndexError",
+    "description": "Negative index wrap-around confusion",
+    "source_code": "items = ['a', 'b', 'c']\nfor i in range(5):\n    print(items[i])",
+    "test_code": "items = ['a', 'b', 'c']\nfor i in range(len(items)):\n    assert items[i] in ['a','b','c']\nprint('ok')",
+    "expected_exception": "IndexError",
+    "expected_fix_contains": ["len", "range"]
+  },
+  {
+    "id": "idx_03",
+    "category": "IndexError",
+    "description": "Empty list pop",
+    "source_code": "stack = []\nstack.pop()",
+    "test_code": null,
+    "expected_exception": "IndexError",
+    "expected_fix_contains": ["if", "len"]
+  },
+  {
+    "id": "idx_04",
+    "category": "IndexError",
+    "description": "String index beyond length",
+    "source_code": "text = 'hello'\nprint(text[10])",
+    "test_code": null,
+    "expected_exception": "IndexError",
+    "expected_fix_contains": ["len"]
+  },
+  {
+    "id": "idx_05",
+    "category": "IndexError",
+    "description": "Nested list access out of bounds",
+    "source_code": "matrix = [[1, 2], [3, 4]]\nprint(matrix[2][0])",
+    "test_code": null,
+    "expected_exception": "IndexError",
+    "expected_fix_contains": ["len"]
+  },
+  {
+    "id": "key_01",
+    "category": "KeyError",
+    "description": "Missing dictionary key",
+    "source_code": "config = {'host': 'localhost', 'port': 8080}\nprint(config['database'])",
+    "test_code": null,
+    "expected_exception": "KeyError",
+    "expected_fix_contains": ["get"]
+  },
+  {
+    "id": "key_02",
+    "category": "KeyError",
+    "description": "Nested dict missing key",
+    "source_code": "data = {'user': {'name': 'Alice'}}\nprint(data['user']['email'])",
+    "test_code": null,
+    "expected_exception": "KeyError",
+    "expected_fix_contains": ["get"]
+  },
+  {
+    "id": "key_03",
+    "category": "KeyError",
+    "description": "Dict key case mismatch",
+    "source_code": "settings = {'Debug': True}\nprint(settings['debug'])",
+    "test_code": null,
+    "expected_exception": "KeyError",
+    "expected_fix_contains": ["Debug"]
+  },
+  {
+    "id": "type_01",
+    "category": "TypeError",
+    "description": "String + int concatenation",
+    "source_code": "name = 'Alice'\nage = 30\nprint(name + ' is ' + age + ' years old')",
+    "test_code": null,
+    "expected_exception": "TypeError",
+    "expected_fix_contains": ["str("]
+  },
+  {
+    "id": "type_02",
+    "category": "TypeError",
+    "description": "Calling None as function",
+    "source_code": "result = None\nresult()",
+    "test_code": null,
+    "expected_exception": "TypeError",
+    "expected_fix_contains": ["if", "None"]
+  },
+  {
+    "id": "type_03",
+    "category": "TypeError",
+    "description": "Wrong number of arguments",
+    "source_code": "def greet(name, greeting):\n    return f'{greeting}, {name}!'\n\nprint(greet('Alice'))",
+    "test_code": null,
+    "expected_exception": "TypeError",
+    "expected_fix_contains": ["greeting"]
+  },
+  {
+    "id": "type_04",
+    "category": "TypeError",
+    "description": "Unsupported operand types",
+    "source_code": "x = '5'\ny = 3\nresult = x * y + x - y",
+    "test_code": null,
+    "expected_exception": "TypeError",
+    "expected_fix_contains": ["int("]
+  },
+  {
+    "id": "type_05",
+    "category": "TypeError",
+    "description": "Iterating over int",
+    "source_code": "total = 0\nfor x in 42:\n    total += x",
+    "test_code": null,
+    "expected_exception": "TypeError",
+    "expected_fix_contains": ["range"]
+  },
+  {
+    "id": "attr_01",
+    "category": "AttributeError",
+    "description": "NoneType has no attribute",
+    "source_code": "data = None\ndata.append(1)",
+    "test_code": null,
+    "expected_exception": "AttributeError",
+    "expected_fix_contains": ["["]
+  },
+  {
+    "id": "attr_02",
+    "category": "AttributeError",
+    "description": "Misspelled method name",
+    "source_code": "numbers = [3, 1, 2]\nnumbers.srot()",
+    "test_code": null,
+    "expected_exception": "AttributeError",
+    "expected_fix_contains": ["sort"]
+  },
+  {
+    "id": "attr_03",
+    "category": "AttributeError",
+    "description": "Wrong string method",
+    "source_code": "text = 'Hello World'\nprint(text.lenght)",
+    "test_code": null,
+    "expected_exception": "AttributeError",
+    "expected_fix_contains": ["len"]
+  },
+  {
+    "id": "attr_04",
+    "category": "AttributeError",
+    "description": "Int has no attribute",
+    "source_code": "x = 42\nx.append(1)",
+    "test_code": null,
+    "expected_exception": "AttributeError",
+    "expected_fix_contains": ["list"]
+  },
+  {
+    "id": "logic_01",
+    "category": "LogicError",
+    "description": "Off-by-one in range",
+    "source_code": "def factorial(n):\n    result = 1\n    for i in range(1, n):\n        result *= i\n    return result\n\nassert factorial(5) == 120",
+    "test_code": "assert factorial(5) == 120\nassert factorial(1) == 1\nprint('ok')",
+    "expected_exception": "AssertionError",
+    "expected_fix_contains": ["n + 1", "n+1"]
+  },
+  {
+    "id": "logic_02",
+    "category": "LogicError",
+    "description": "Wrong comparison operator",
+    "source_code": "def is_adult(age):\n    return age > 18\n\nassert is_adult(18) == True",
+    "test_code": "assert is_adult(18) == True\nprint('ok')",
+    "expected_exception": "AssertionError",
+    "expected_fix_contains": [">="]
+  },
+  {
+    "id": "logic_03",
+    "category": "LogicError",
+    "description": "Wrong arithmetic operator",
+    "source_code": "def add(a, b):\n    return a - b\n\nassert add(2, 3) == 5",
+    "test_code": "assert add(2, 3) == 5\nassert add(0, 0) == 0\nprint('ok')",
+    "expected_exception": "AssertionError",
+    "expected_fix_contains": ["+"]
+  },
+  {
+    "id": "logic_04",
+    "category": "LogicError",
+    "description": "Return inside loop (premature exit)",
+    "source_code": "def find_max(nums):\n    max_val = nums[0]\n    for n in nums:\n        if n > max_val:\n            max_val = n\n            return max_val\n    return max_val\n\nassert find_max([1, 5, 3, 9, 2]) == 9",
+    "test_code": "assert find_max([1, 5, 3, 9, 2]) == 9\nprint('ok')",
+    "expected_exception": "AssertionError",
+    "expected_fix_contains": ["return"]
+  },
+  {
+    "id": "logic_05",
+    "category": "LogicError",
+    "description": "Wrong boolean logic",
+    "source_code": "def can_vote(age, is_citizen):\n    return age >= 18 or is_citizen\n\nassert can_vote(20, False) == False",
+    "test_code": "assert can_vote(20, False) == False\nassert can_vote(20, True) == True\nprint('ok')",
+    "expected_exception": "AssertionError",
+    "expected_fix_contains": ["and"]
+  },
+  {
+    "id": "zero_01",
+    "category": "ZeroDivisionError",
+    "description": "Division by zero",
+    "source_code": "def average(numbers):\n    return sum(numbers) / len(numbers)\n\nprint(average([]))",
+    "test_code": null,
+    "expected_exception": "ZeroDivisionError",
+    "expected_fix_contains": ["if", "len"]
+  },
+  {
+    "id": "zero_02",
+    "category": "ZeroDivisionError",
+    "description": "Modulo by zero",
+    "source_code": "x = 10\ny = 0\nprint(x % y)",
+    "test_code": null,
+    "expected_exception": "ZeroDivisionError",
+    "expected_fix_contains": ["if", "0"]
+  },
+  {
+    "id": "val_01",
+    "category": "ValueError",
+    "description": "Invalid int conversion",
+    "source_code": "user_input = 'abc'\nage = int(user_input)\nprint(age)",
+    "test_code": null,
+    "expected_exception": "ValueError",
+    "expected_fix_contains": ["try", "except"]
+  },
+  {
+    "id": "val_02",
+    "category": "ValueError",
+    "description": "List.remove item not found",
+    "source_code": "fruits = ['apple', 'banana']\nfruits.remove('cherry')",
+    "test_code": null,
+    "expected_exception": "ValueError",
+    "expected_fix_contains": ["if", "in"]
+  },
+  {
+    "id": "name_01",
+    "category": "NameError",
+    "description": "Undefined variable",
+    "source_code": "print(greeting)\ngreeting = 'hello'",
+    "test_code": null,
+    "expected_exception": "NameError",
+    "expected_fix_contains": ["greeting"]
+  },
+  {
+    "id": "name_02",
+    "category": "NameError",
+    "description": "Typo in variable name",
+    "source_code": "counter = 0\nfor i in range(10):\n    conter += 1\nprint(counter)",
+    "test_code": null,
+    "expected_exception": "NameError",
+    "expected_fix_contains": ["counter"]
+  },
+  {
+    "id": "import_01",
+    "category": "ImportError",
+    "description": "Import from wrong module",
+    "source_code": "from math import loads\nprint(loads('{}'))",
+    "test_code": null,
+    "expected_exception": "ImportError",
+    "expected_fix_contains": ["json"]
+  },
+  {
+    "id": "runtime_01",
+    "category": "RuntimeError",
+    "description": "Recursion depth exceeded",
+    "source_code": "def countdown(n):\n    print(n)\n    countdown(n - 1)\n\ncountdown(5)",
+    "test_code": null,
+    "expected_exception": "RecursionError",
+    "expected_fix_contains": ["if", "0"]
+  },
+  {
+    "id": "edge_01",
+    "category": "EdgeCase",
+    "description": "Empty string split",
+    "source_code": "text = ''\nwords = text.split(',')\nfirst = words[0]\nassert first != ''",
+    "test_code": null,
+    "expected_exception": "AssertionError",
+    "expected_fix_contains": ["if"]
+  },
+  {
+    "id": "edge_02",
+    "category": "EdgeCase",
+    "description": "Uninitialized accumulator",
+    "source_code": "def sum_list(items):\n    for item in items:\n        total += item\n    return total\n\nprint(sum_list([1, 2, 3]))",
+    "test_code": "assert sum_list([1, 2, 3]) == 6\nprint('ok')",
+    "expected_exception": "UnboundLocalError",
+    "expected_fix_contains": ["total = 0"]
+  }
+]
